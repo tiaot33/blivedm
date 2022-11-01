@@ -64,6 +64,9 @@ async def run_single_client():
         await client.stop_and_close()
 
 
+live_info_g = {}
+
+
 async def run_multi_client():
     """
     演示同时监听多个直播间
@@ -100,14 +103,12 @@ class MyHandler(blivedm.BaseHandler):
 
     _CMD_CALLBACK_DICT['INTERACT_WORD'] = __interact_word_callback  # noqa
 
-    live_info = {}
-
     # LIVE
     async def __live_callback(self, client: blivedm.BLiveClient, command: dict):
-        if command['live_key'] != live_info['live_key']:
+        if command['live_key'] != live_info_g['live_key']:
             i = command['sub_session_key'].index(':')
             timestamp = int(command['sub_session_key'][i + 1:])
-            live_info['live_time'] = timestamp
+            live_info_g['live_time'] = timestamp
             t = datetime.datetime.fromtimestamp(timestamp, pytz.timezone('Asia/Shanghai')) \
                 .strftime('%Y-%m-%d %H:%M:%S')
             app.send_text(f'直播间({client.room_id})开播了[{t}]')
