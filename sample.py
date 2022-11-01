@@ -3,8 +3,13 @@ import asyncio
 import random
 
 import blivedm
+from configparser import ConfigParser
 
 # 直播间ID的取值看直播间URL
+cfg = ConfigParser()
+cfg.read('/blivedm/config.ini')
+# cfg.read('config.ini')
+
 TEST_ROOM_IDS = [
     12235923,
     14327465,
@@ -16,14 +21,16 @@ TEST_ROOM_IDS = [
 
 async def main():
     await run_single_client()
-    await run_multi_client()
+    # await run_multi_client()
 
 
 async def run_single_client():
     """
     演示监听一个直播间
     """
-    room_id = random.choice(TEST_ROOM_IDS)
+    # room_id = random.choice(TEST_ROOM_IDS)
+    room_id = cfg.getint('common', 'ROOM_ID')
+    print(f'start listen room_id={room_id}')
     # 如果SSL验证失败就把ssl设为False，B站真的有过忘续证书的情况
     client = blivedm.BLiveClient(room_id, ssl=True)
     handler = MyHandler()
@@ -31,13 +38,13 @@ async def run_single_client():
 
     client.start()
     try:
-        # 演示5秒后停止
-        await asyncio.sleep(5)
-        client.stop()
-
-        await client.join()
+        await asyncio.gather((
+            client.join()
+        ))
     finally:
-        await client.stop_and_close()
+        await asyncio.gather((
+            client.stop_and_close()
+        ))
 
 
 async def run_multi_client():

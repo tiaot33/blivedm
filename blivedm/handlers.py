@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import logging
 from typing import *
+from logging.handlers import TimedRotatingFileHandler
+import os
 
 from . import client as client_
 from . import models
@@ -9,8 +11,30 @@ __all__ = (
     'HandlerInterface',
     'BaseHandler',
 )
-
+# log_parent_path = os.path.join(os.path.dirname(__file__), "..")
+log_parent_path = "/blivedm"
 logger = logging.getLogger('blivedm')
+logger.setLevel(logging.INFO)
+log_path = os.path.join(log_parent_path, "logs")
+if not os.path.isdir(log_path):
+    os.makedirs(log_path)
+file_handler = TimedRotatingFileHandler(
+    filename=os.path.join(log_path, 'blivedm.log'), when="MIDNIGHT", interval=1, backupCount=0
+)
+# filename="mylog" suffix设置，会生成文件名为mylog.2020-02-25.log
+file_handler.suffix = "%Y-%m-%d.log"
+# 定义日志输出格式
+file_handler.setFormatter(
+    logging.Formatter(
+        "[%(asctime)s]%(message)s"
+    )
+)
+logger.addHandler(file_handler)
+
+logger_unkown = logging.getLogger('blivedm_unkown')
+file_handler = logging.FileHandler(filename="logs/blivedm_unkown.log")
+file_handler.setLevel(logging.WARN)
+logger_unkown.addHandler(file_handler)
 
 # 常见可忽略的cmd
 IGNORED_CMDS = (
@@ -84,18 +108,18 @@ class BaseHandler(HandlerInterface):
         ]]
     ] = {
         # 收到心跳包，这是blivedm自造的消息，原本的心跳包格式不一样
-        '_HEARTBEAT': __heartbeat_callback,
+        # '_HEARTBEAT': __heartbeat_callback,
         # 收到弹幕
         # go-common\app\service\live\live-dm\service\v1\send.go
-        'DANMU_MSG': __danmu_msg_callback,
+        # 'DANMU_MSG': __danmu_msg_callback,
         # 有人送礼
-        'SEND_GIFT': __send_gift_callback,
+        # 'SEND_GIFT': __send_gift_callback,
         # 有人上舰
-        'GUARD_BUY': __guard_buy_callback,
+        # 'GUARD_BUY': __guard_buy_callback,
         # 醒目留言
-        'SUPER_CHAT_MESSAGE': __super_chat_message_callback,
+        # 'SUPER_CHAT_MESSAGE': __super_chat_message_callback,
         # 删除醒目留言
-        'SUPER_CHAT_MESSAGE_DELETE': __super_chat_message_delete_callback,
+        # 'SUPER_CHAT_MESSAGE_DELETE': __super_chat_message_delete_callback,
     }
     # 忽略其他常见cmd
     for cmd in IGNORED_CMDS:
@@ -107,11 +131,11 @@ class BaseHandler(HandlerInterface):
         pos = cmd.find(':')  # 2019-5-29 B站弹幕升级新增了参数
         if pos != -1:
             cmd = cmd[:pos]
-
+        logger.info('[room=%d][cmd=%s][command=%s]', client.room_id, cmd, command)
         if cmd not in self._CMD_CALLBACK_DICT:
             # 只有第一次遇到未知cmd时打日志
             if cmd not in logged_unknown_cmds:
-                logger.warning('room=%d unknown cmd=%s, command=%s', client.room_id, cmd, command)
+                logger_unkown.warning('room=%d unknown cmd=%s, command=%s', client.room_id, cmd, command)
                 logged_unknown_cmds.add(cmd)
             return
 
