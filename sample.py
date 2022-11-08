@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 import asyncio
+import datetime
 import random
+from configparser import ConfigParser
+
+import pytz
 import requests
 from corpwechatbot.app import AppMsgSender
-import time
-import datetime
-import pytz
-from configparser import ConfigParser
 
 import blivedm
 
@@ -105,7 +105,7 @@ class MyHandler(blivedm.BaseHandler):
 
     # LIVE
     async def __live_callback(self, client: blivedm.BLiveClient, command: dict):
-        if command['live_key'] != live_info_g['live_key']:
+        if 'live_key'not in live_info_g or command['live_key'] != live_info_g['live_key']:
             i = command['sub_session_key'].index(':')
             timestamp = int(command['sub_session_key'][i + 1:])
             live_info_g['live_time'] = timestamp

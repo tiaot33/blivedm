@@ -100,4 +100,4 @@ ENV/
 
 
 .idea/
-.ini
+!/config.ini
