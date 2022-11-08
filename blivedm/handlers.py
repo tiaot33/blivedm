@@ -32,7 +32,7 @@ file_handler.setFormatter(
 logger.addHandler(file_handler)
 
 logger_unkown = logging.getLogger('blivedm_unkown')
-file_handler = logging.FileHandler(filename="logs/blivedm_unkown.log")
+file_handler = logging.FileHandler(filename="/blivedm/logs/blivedm_unkown.log")
 file_handler.setLevel(logging.WARN)
 logger_unkown.addHandler(file_handler)
 
